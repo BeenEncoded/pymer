@@ -37,12 +37,25 @@ class ThreadData:
         raise NotImplementedError(ThreadData.setlocals.__qualname__ + ": Not implemented")
     
     def run_action(self) -> None:
+        '''
+        Set the self.should_update attribute to tell the ui to update after the action is
+        executed.
+        '''
         if self.action is None:
             raise NotImplementedError(ThreadData.run_action.__qualname__ + ": Not implemented")
         self.action()
         self.should_update = True
 
 class WindowUpdateThread(threading.Thread):
+    '''
+    Represents a general worker thread for the UI (based on Qt5).
+    This worker thread initializes data from a passed ThreadData object 
+    when the thread of execution is initialized.
+
+    WindowUpdateThread.abort can be set to false to make the thread stop
+    on the next iteration.
+    '''
+
     class QtComObject(QObject):
         update = pyqtSignal(ThreadData)
         started = pyqtSignal(ThreadData)
@@ -50,8 +63,10 @@ class WindowUpdateThread(threading.Thread):
 
     def __init__(self, threaddata: ThreadData):
         '''
-        __init__(action)
-            initializes this object with a functor that takes no arguments.  
+        __init__(threaddata)
+            initializes this object with threaddata.  the threaddata object also contains
+            the action the thread is to perform.  This allows the 'thread function' to
+            have access to all the data.
         '''
         super(WindowUpdateThread, self).__init__()
 
